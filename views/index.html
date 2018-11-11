@@ -10,7 +10,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Welcome to Glitch!</title>
+    <title>Best Shifumi Ever!!!</title>
     <meta name="description" content="A cool thing made with Glitch">
     <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
     <meta charset="utf-8">
@@ -21,16 +21,70 @@
     <link rel="stylesheet" href="/style.css">
     
     <!-- import the webpage's client-side javascript file -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+    <script src="/requetes.js" defer></script>
     <script src="/client.js" defer></script>
   </head>
   <body>
     <header>
       <h1>
+        <img src="https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2F28031.png?1541948645097" class="left" height="100px" >
+        <img src="https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2F001625-kung%20fu%20smurf%20and%20karate%20smurf%20sparring.JPG?1541946514328" class="right" height="100px" >
         Welcome on schtroump-phou-troll
       </h1>
     </header>
 
-    <main>      
+    <main>
+      
+      <div id="application" style="width:90%; border:solid">
+        
+        
+        <!-- USELESS CURRENTLY--
+        <span v-if="goto_connect">
+          <h2>{{title}}</h2>
+
+          <form v-on:submit="createRoom" style="padding:10px; max-width:100%; background-color:white">
+            <div style="border:solid">
+              <input type="text" name="username" maxlength="100" placeholder="username" aria-labelledby="submit-username" required v-on:input="updateUsername" style="padding:10px"/>
+            </div>
+          </form>
+
+          <div style="padding:10px">
+            <div style="border:solid">
+              <button id="create-room" v-on:click="createRoom" style="margin:10px">Create a room</button>
+            </div>
+          </div>
+
+          <form v-on:submit="joinRoom" style="padding:10px; max-width:100%; background-color:white">
+            <div style="border:solid">
+              <input name="roomId" maxlength="100" placeholder="room Id" aria-labelledby="submit-id" required v-on:input="updateRoomId" style="padding:10px"/>
+              <button id="join-room" v-on:click="joinRoom" style="margin:10px">Join game</button>
+            </div>
+          </form>
+        </span>
+        
+        
+        
+        <span v-if="goto_waiting_room">
+          <h2>{{title}}</h2>
+
+          <div style="padding:10px">
+            <div style="border:solid">
+              <p>Hello {{username}}({{userid}}), you are in the room {{roomid}} !</p>
+            </div>
+          </div>
+
+          <div style="padding:10px">
+            <div style="border:solid">
+              <button id="leave-room" v-on:click="leaveRoom" style="margin:10px">Leave game</button>
+            </div>
+          </div>
+        </span>
+        <!---->
+        
+        
+      </div>
+      <!-- TO DELETE
       <div id="first-div">
         <form>
           <input name="username" type="text" maxlength="100" placeholder="username" aria-labelledby="submit-username">
@@ -46,6 +100,7 @@
           <button type="submit" id="continue">&#8594;</button>
         </form>
       </div>
+      <!---->
     </main>
 
     <footer>
