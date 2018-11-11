@@ -1,6 +1,7 @@
 dependencies:
   body-parser: 1.18.3
   express: 4.16.3
+  shortid: 2.2.14
 packages:
   /accepts/1.3.5:
     dependencies:
@@ -267,6 +268,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-VgiurfwAvmwpAd9fmGF4jeDVl8g=
+  /nanoid/2.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-SG2qscLE3iM4C0CNzGrsAojJHSVHMS1J8NnvJ31P1lH8P0hGHOiafmniNJz6w6q7vuoDlV7RdySlJgtqkFEVtQ==
   /negotiator/0.6.1:
     dev: false
     engines:
@@ -387,6 +392,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-BvE/TwpZX4FXExxOxZyRGQQv651MSwmWKZGqvmPcRIjDqWub67kTKuIMx43cZZrS/cBBzwBcNDWoFxt2XEFIpQ==
+  /shortid/2.2.14:
+    dependencies:
+      nanoid: 2.0.0
+    dev: false
+    resolution:
+      integrity: sha512-4UnZgr9gDdA1kaKj/38IiudfC3KHKhDc1zi/HSxd9FQDR0VLwH3/y79tZJLsVYPsJgIjeHjqIWaWVRJUj9qZOQ==
   /statuses/1.4.0:
     dev: false
     engines:
@@ -432,3 +443,4 @@ shrinkwrapVersion: 3
 specifiers:
   body-parser: 1.18.3
   express: ^4.16.3
+  shortid: 2.2.14

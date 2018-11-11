@@ -7,12 +7,33 @@
 
 body {
   font-family: "Benton Sans", "Helvetica Neue", helvetica, arial, sans-serif;
-  margin: 2em;
+  margin: 0em;
+}
+
+/* --- HEADER --- */
+header{
+    height: 100px;
+    background-color: rgb(27, 161, 226);
+}
+header h1{
+    font-size: 42px;
+    text-align: center;
+    vertical-align: bottom;
+    line-height: 100px;
+}
+
+@media screen and (max-width: 970px){
+  header h1{
+    font-size: 25px;
+    text-align: center;
+    vertical-align: bottom;
+    line-height: 100px;
+  }
 }
 
 h1 {
   font-style: italic;
-  color: #373fff;
+  color: #ffffff;
 }
 
 .bold {
@@ -21,6 +42,14 @@ h1 {
 
 p {
   max-width: 600px;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
 }
 
 form {
@@ -67,5 +96,10 @@ li {
 footer {
   margin-top: 50px;
   padding-top: 25px;
+  color: #afafaf;
   border-top: 1px solid lightgrey;
+}
+
+footer a{
+  color: #5a5a5a;
 }
