@@ -2,8 +2,15 @@
 // where your node app starts
 
 // init project
-const express = require('express');
-const app = express();
+var express = require('express');
+var app = express()
+  , http = require('http')
+  , server = http.createServer(app)
+  , io = require('socket.io').listen(server);
+
+var port = process.env.PORT || 3000;
+
+
 const bodyParser = require('body-parser');
 
 //import the DAOs
@@ -32,6 +39,7 @@ app.get('/', function(request, response) {
   endpoint used when the player clicks on the create game button
     body of the request must contain :
       - username : field containing a string representing the username that the player chose
+      - userId : the id of the user that created the room
       
     returns :
       - status 201 + RoomCreationDAO : object containing :
@@ -42,11 +50,14 @@ app.get('/', function(request, response) {
       
       - status 400 if the username parameter is missing
 */
-app.post("/create-room", [createUserOnRequest, createRoomOnRequest]);
+app.post("/create-room", [updateUsernameOnRequest, createRoomOnRequest]);
 
 /*
   endpoint used when a player clicks on the join game button
-    body of the request is empty but the path must contain the id of the room the player wants to join
+    - the path must contain the id of the room the player wants to join
+    - the body must contain 
+      - username
+      - userId : the id of the user that created the room
     example : the request should be addressed to https://schtroum-phou-troll.glitch.me/656546545
     
     returns :
@@ -59,13 +70,14 @@ app.post("/create-room", [createUserOnRequest, createRoomOnRequest]);
       OR
       
       - status 404 if the room id is incorrect
+      
+      OR
+      
+      - status 402 if the room is full
 */
-app.get("/:id", [createUserOnRequest, joinRoomOnRequest]);
+app.post("/:id", [updateUsernameOnRequest, joinRoomOnRequest]);
 
-// listen for requests :)
-const listener = app.listen(process.env.PORT, function() {
-  console.log('Your app is listening on port ' + listener.address().port);
-});
+
 
 //USER CREATION
 
@@ -94,15 +106,18 @@ function createUser(username){
   return userId;
 }
 
-function createUserOnRequest(req, resp, next){
-  if(req.body.username){
-      var userId = createUser(req.body.username);
-      resp.locals.userId = userId;
+function updateUsername(username, userId){
+    User.users[userId].username = username;
+}
+
+function updateUsernameOnRequest(req, resp, next){
+  if(req.body.username && req.body.userId){
+      var userId = updateUsername(req.body.username, req.body.userId);
       next();
 
   } else {
      resp.status(400).send({
-      error: "missing username parameter"
+      error: "missing username or userId parameter"
     }); 
   }
 }
@@ -139,7 +154,7 @@ function createRoom(creatorId){
 
 //function called by the endpoint to create a room
 function createRoomOnRequest(req,resp){
-  var creatorId = resp.locals.userId;
+  var creatorId = req.body.userId;
   var roomId = createRoom(creatorId);
   let roomCreationDAO = new RoomCreationDAO(roomId, creatorId);
   resp.status(201).send(roomCreationDAO);
@@ -151,8 +166,17 @@ function joinRoomOnRequest(req,resp){
   if(req.params.id){
     
       if(req.params.id in Room.rooms){
-        Room.rooms[req.params.id].addPlayer(resp.locals.userId);
-        resp.status(200).send(resp.locals.userId);
+        try {
+          Room.rooms[req.params.id].addPlayer(req.body.userId);
+          resp.status(200).send({userId: resp.locals.userId});
+          if(Room.rooms[req.params.id].isFull()){
+            broadcastToRoomFull(req.params.id);
+          }
+        }
+        catch(e){
+            resp.status(402).send({error: "The room you asked for is full"});
+        }
+        
       } else {
         resp.status(404).send({error: "The room you asked for does not exist"});
       }
@@ -165,6 +189,51 @@ function joinRoomOnRequest(req,resp){
 }
 
 
+//SOCKETS
+
+io.on('connection', function (socket) {
+  //console.log("connection");
+  var userId = createUser("");
+  User.users[userId].socket = socket;
+  socket.id = userId;
+  
+  socket.emit('userId',userId);
+  //console.log(userId);
+  
+  
+  socket.on('disconnect', function () {
+    var userId = socket.id;
+    var user = User.users[userId];
+    var room = Room.rooms[user.roomId];
+    if(user.roomId != "" && room.playersIds.length==1){
+      delete Room.rooms[user.roomId];
+    }
+    delete User.users[userId];
+    //console.log("disconnection");
+  });
+});
+
+function broadcastToRoomFull(roomId){
+  var room = Room.rooms[roomId];
+  var usernames = [];
+  for(var i = 0;i< room.playersIds.length; i++){
+    var userId = room.playersIds[i];
+    usernames.push(User.users[userId].username); 
+  }
+  var body = {usernames : usernames};
+  for(var i = 0; i < room.playersIds.length; i++){
+    userId = room.playersIds[i];
+    User.users[userId].socket.emit('joined',body); 
+  }
+}
+
+// listen for requests :)
+// const listener = app.listen(port, function() {
+//   console.log('Your app is listening on port ' + listener.address().port);
+// });
+
+server.listen(port);
+  
 // //TESTS
 // createUser("Laure");
 // createUser("Ladislas");

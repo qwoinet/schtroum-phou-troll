@@ -21,23 +21,23 @@
     <link rel="stylesheet" href="/style.css">
     
     <!-- import the webpage's client-side javascript file -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-    <script src="/requetes.js" defer></script>
-    <script src="/client.js" defer></script>
+    <script src="https://unpkg.com/getlibs"></script><!--allows js imports-->
+    <!--<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>-->
+    <!--<script src="/requetes.js" defer></script>-->
+    <!--<script src="/client.js" defer></script>-->
+    
   </head>
   <body>
     <header>
       <h1>
-        <img src="https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2F28031.png?1541948645097" class="left" height="100px" >
-        <img src="https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2F001625-kung%20fu%20smurf%20and%20karate%20smurf%20sparring.JPG?1541946514328" class="right" height="100px" >
+        <img src="https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2F28031.png?1542678402478" class="left" height="100px" >
         Welcome on schtroump-phou-troll
       </h1>
     </header>
 
     <main>
-      
-      <div id="application" style="width:90%; border:solid">
-        
+
+      <div id="application">
         
         <!-- USELESS CURRENTLY--
         <span v-if="goto_connect">
@@ -103,14 +103,13 @@
       <!---->
     </main>
 
-    <footer>
-      Made with <a href="https://glitch.com">Glitch</a>!
-    </footer>
-
     <!-- include the Glitch button to show what the webpage is about and
           to make it easier for folks to view source and remix -->
-    <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
-    <script src="https://button.glitch.me/button.js"></script>
-
+    <!--<div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>-->
+  <script src="/socket.io/socket.io.js"></script>
+  <!--<script src="/manageSockets.js"></script> -->
   </body>
+  <script>
+		System.import('./client.js');
+	</script>
 </html>
