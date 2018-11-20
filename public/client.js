@@ -1,3 +1,5 @@
+
+
 /* TO DELETE
 
 // client-side js
@@ -55,34 +57,127 @@ firstForm.onsubmit = function(event) {
 */
 
 /**/
-// Entrance page of the application
-// Define username and create/join a room
-function goto_connect(){
+
+import Vue from 'vue'
+import Requests from './requetes.js'
+import ManageSockets from './manageSockets.js'
+
+import vue_choose_name from './views/choose_name.vue'
+import vue_choose_room from './views/choose_room.vue'
+import vue_connect from './views/connect.vue'
+import vue_waiting_room from './views/waiting_room.vue'
+import vue_game_choose_sign from './views/game_choose_sign.vue'
+import vue_game_waiting_opponent from './views/game_waiting_opponent.vue'
+
+
+//
+//
+function goto_choose_name(){
   new Vue({
     el: '#application',
-    template:`
-      <div id="application" style="width:90%; border:solid">
-        <h2>{{title}}</h2>
+    template: vue_choose_name.template,
+    data: {
+      username: '', 
+    },
+    methods: {
+      updateUsername: function(event){
+        event.preventDefault();
+        this.username = event.target.value;
+      },
+      validateUsername: function(event){
+        event.preventDefault();
+        if(this.username == ''){
+          alert("The following information is missing : username");
+          return;
+        }
+        goto_choose_room(this.username);
+      }
+    }
+  });
+}
 
-        <form v-on:submit="createRoom" style="padding:10px; max-width:100%; background-color:white">
-          <div style="border:solid">
-            <input type="text" name="username" maxlength="100" placeholder="username" aria-labelledby="submit-username" required v-on:input="updateUsername" style="padding:10px"/>
-          </div>
-        </form>
+//
+//
+function goto_choose_room(username){
+  new Vue({
+    el: '#application',
+    template: vue_choose_room.template,
+    data: {
+      username: username,
+      roomid: '',
+    },
+    methods: {
+      updateRoomId: function(event){
+        event.preventDefault();
+        this.roomid = event.target.value;
+      },
+      joinRoom: function(event){
+        event.preventDefault();
+        if(this.username == ''){
+          alert("The following information is missing : username");
+          goto_choose_name();
+          return;
+        }
+        if(this.roomid == ''){
+          alert("The following information is missing : room Id");
+          return;
+        }
+        //call a function with 2 arguments
+        // - username : this.username
+        // - roomid : this.roomid
+        //expect 1 object
+        // - {error: false, userid} or {error: true, error_msg}
+        // var res = {error: false, userid: 4};
+        var res_promice = Requests.sendJoinRequest(this.username, this.roomid);
+        var myusername = this.username;
+        var myroomid = this.roomid;
+        res_promice.then(function(res){
+          if(res.error){
+            alert(res.error_msg);
+          }
+          else{
+            goto_waiting_room(myusername, res.userid, myroomid);
+          }
+        });
+      },
+      createRoom: function(event){
+        event.preventDefault();
+        if(this.username == ''){
+          alert("The following information is missing : username");
+          return;
+        }
+        //call a function with 1 argument
+        // - username : this.username
+        //expect 1 object
+        // - {error: false, userid, roomid} or {error: true, error_msg}
+        //var res = {error: false, userid: 4, roomid: 3};
+        var res_promice = Requests.sendCreationRequest(this.username);
+        var myusername = this.username;
+        res_promice.then(function(res){
+          if(res.error){
+            alert(res.error_msg);
+          }
+          else{
+            goto_waiting_room(myusername, res.userid, res.roomid);
+          }
+        });
+      },
+    }
+  });
+}
 
-        <div style="padding:10px">
-          <div style="border:solid">
-            <button id="create-room" v-on:click="createRoom" style="margin:10px">Create a room</button>
-          </div>
-        </div>
 
-        <form v-on:submit="joinRoom" style="padding:10px; max-width:100%; background-color:white">
-          <div style="border:solid">
-            <input name="roomId" maxlength="100" placeholder="room Id" aria-labelledby="submit-id" required v-on:input="updateRoomId" style="padding:10px"/>
-            <button id="join-room" v-on:click="joinRoom" style="margin:10px">Join game</button>
-          </div>
-        </form>
-      </div>`,
+// Entrance page of the application
+// Define username and create/join a room
+/**
+function goto_connect(){
+  //var current_vue = new Vue(vue_connect);
+  //current_vue.setAttributes(goto_list);
+  //current_vue.$mount('#application');
+  
+  new Vue({
+    el: '#application',
+    template: vue_connect.template,
     data: {
       username: '',
       title: 'Front unique',
@@ -102,9 +197,10 @@ function goto_connect(){
         }
         //call a function with 1 argument
         // - username : this.username
-        //expect 1 value
+        //expect 1 object
         // - {error: false, userid, roomid} or {error: true, error_msg}
         var res = {error: false, userid: 4, roomid: 3};
+        //var res = Requests.sendCreationRequest(this.username);
         if(res.error){
           alert(res.error_msg);
         }
@@ -130,7 +226,7 @@ function goto_connect(){
         //call a function with 2 arguments
         // - username : this.username
         // - roomid : this.roomid
-        //expect 1 value
+        //expect 1 object
         // - {error: false, userid} or {error: true, error_msg}
         var res = {error: false, userid: 4};
         if(res.error){
@@ -143,157 +239,124 @@ function goto_connect(){
       },
     },
   });
+  
 }
+/**/
 
 // Waiting room
 // Wait for other players to join
 function goto_waiting_room(username, userid, roomid){
-  //alert("function : goto_waiting_room");
+  //alert("goto_waiting_room");
+  /**/
+  //ManageSockets.socket.on('joined',function(data){
+  //  alert('got socket "joined" new');
+    //ManageSockets.bind_with_socket_joined(function(data){});
+    //var JSONdata = data.json();
+    //JSONdata.then(function(resdata){
+    //  alert(resdata);
+      // resdata.usernames => transformation !!!!
+      //goto_game_choose_sign(username, userid, roomid, resdata.usernames);
+    //});
+    
+  //});
+  /**/
+  
+  /**/
+  ManageSockets.bind_with_socket_joined(function(data){
+    alert('got socket "joined" new');
+  });
+  /**/
   new Vue({
     el: '#application',
-    template:`
-      <div id="application" style="width:90%; border:solid">
-        <h2>{{title}}</h2>
-
-        <div style="padding:10px">
-          <div style="border:solid">
-            <p>Hello {{username}}({{userid}}), you are in the room {{roomid}} !</p>
-          </div>
-        </div>
-
-        <div style="padding:10px">
-          <div style="border:solid">
-            <button id="leave-room" v-on:click="leaveRoom" style="margin:10px">Leave game</button>
-          </div>
-        </div>
-      </div>`,
+    template: vue_waiting_room.template,
     data:{
       username: username,
       userid: userid,
       roomid: roomid,
-      goto_waiting_room: true,
-      goto_connect: false,
     },
     methods:{
       leaveRoom: function(event){
         event.preventDefault();
-        goto_connect();
+        goto_choose_room(this.username);
       },
+      /**/
+      playInRoom: function(event){
+        event.preventDefault();
+        goto_game_choose_sign(this.username, this.userid, this.roomid, 'your opponent');
+      },
+      /**/
     },
   });
 }
 
 // Playing room
 // Choose the sign to use
-function goto_game_choose_sign(){
+function goto_game_choose_sign(username, userid, roomid, opponentname){
   new Vue({
     el: '#application',
-    template: `
-      <div id="application">
-
-        <h2>{{title}}</h2>
-
-        <div>
-          
-          <input id="rock" type="image">
-        </div>
-      </div>`,
+    template: vue_game_choose_sign.template,
     data:{
-      
+      choices:[
+        {name: "rock", url: 'https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Frock.png?1541956335451'},
+        {name: "paper", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fpaper.png?1541956335380"},
+        {name: "scissors", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fscissors.png?1541956335262"},
+        //{name: "lizard", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Flizard.png?1541956335285"},
+        //{name: "spock", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fspock.png?1541956335215"},
+        ],
+      title: "Game's on",
+      username: username,
+      userid: userid,
+      roomid: roomid,
+      opponentname: opponentname,
     },
     methods:{
+      chooseSign: function(event){
+        event.preventDefault();
+        //alert(event.target.id);
+        goto_game_waiting_opponent(this.username, this.userid, this.roomid, this.opponentname, event.target.id);
+      },
     },
   });
 }
 
-
-goto_connect();
-
-
-/**/
-
-/**
-
-var current_vue = new Vue({el: '#application', data: {}, methods: {}});
-
-function goto_connect(){
-  current_vue.data = {
-    username: '',
-    title: 'Front unique',
-    roomid: '',
-    goto_connect: true,
-  };
-  current_vue.methods = {
-    updateUsername: function(event){
-      event.preventDefault();
-      this.username = event.target.value;
+//
+//
+function goto_game_waiting_opponent(username, userid, roomid, opponentname, userchoice){
+  alert(userchoice);
+  var currentvue = new Vue({
+    el: '#application',
+    template: vue_game_waiting_opponent.template,
+    data: {
+      choices:[
+        {name: "rock", url: 'https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Frock.png?1541956335451'},
+        {name: "paper", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fpaper.png?1541956335380"},
+        {name: "scissors", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fscissors.png?1541956335262"},
+        {name: "lizard", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Flizard.png?1541956335285"},
+        {name: "spock", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fspock.png?1541956335215"},
+        ],
+      title: "Waiting",
+      username: username,
+      userid: userid,
+      roomid: roomid,
+      userchoice: userchoice,
+      userchoicepicture: 'https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fspock.png?1541956335215', //this.getPictureFromSign(userchoice),
+      opponentname: opponentname,
+      opponentchoice: '',
+      opponentchoicepicture: '',
     },
-    createRoom: function(event){
-      event.preventDefault();
-      if(this.username == ''){
-        alert("The following information is missing : username");
-        return;
-      }
-      //call a function with 1 argument
-      // - username : this.username
-      //expect 1 value
-      // - {error: false, userid, roomid} or {error: true, error_msg}
-      var res = {error: false, userid: 4, roomid: 3};
-      if(res.error){
-        alert(res.error_msg);
-      }
-      else{
-        //this.goto_connect = false;
-        goto_waiting_room(this.username, res.userid, res.roomid);
-      }
+    methods:{
+      getPictureFromSign: function(sign){
+        for(var choice in this.choices){
+          if(choice.name == sign){
+            return choice.url;
+          }
+          return '';
+        }
+      },
     },
-    updateRoomId: function(event){
-      event.preventDefault();
-      this.roomid = event.target.value;
-    },
-    joinRoom: function(event){
-      event.preventDefault();
-      if(this.username == ''){
-        alert("The following information is missing : username");
-        return;
-      }
-      if(this.roomid == ''){
-        alert("The following information is missing : room Id");
-        return;
-      }
-      //call a function with 2 arguments
-      // - username : this.username
-      // - roomid : this.roomid
-      //expect 1 value
-      // - {error: false, userid} or {error: true, error_msg}
-      var res = {error: false, userid: 4};
-      if(res.error){
-        alert(res.error_msg);
-      }
-      else{
-        //this.goto_connect = false;
-        goto_waiting_room(this.username, res.userid, this.roomid);
-      }
-    },
-  };
+  });
+  //currentvue.$userchoicepicture = currentvue.$getPictureFromSign(currentvue.$userchoice);
 }
 
-function goto_waiting_room(username, userid, roomid){
-  //alert("function : goto_waiting_room");
-  current_vue.data = {
-    username: username,
-    userid: userid,
-    roomid: roomid,
-    goto_waiting_room: true,
-  };
-  current_vue.methods = {
-    leaveRoom: function(event){
-      event.preventDefault();
-      goto_connect();
-    },
-  };
-}
+goto_choose_name();
 
-goto_connect();
-
-/**/
