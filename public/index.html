@@ -38,69 +38,7 @@
     <main>
 
       <div id="application">
-        
-        <!-- USELESS CURRENTLY--
-        <span v-if="goto_connect">
-          <h2>{{title}}</h2>
-
-          <form v-on:submit="createRoom" style="padding:10px; max-width:100%; background-color:white">
-            <div style="border:solid">
-              <input type="text" name="username" maxlength="100" placeholder="username" aria-labelledby="submit-username" required v-on:input="updateUsername" style="padding:10px"/>
-            </div>
-          </form>
-
-          <div style="padding:10px">
-            <div style="border:solid">
-              <button id="create-room" v-on:click="createRoom" style="margin:10px">Create a room</button>
-            </div>
-          </div>
-
-          <form v-on:submit="joinRoom" style="padding:10px; max-width:100%; background-color:white">
-            <div style="border:solid">
-              <input name="roomId" maxlength="100" placeholder="room Id" aria-labelledby="submit-id" required v-on:input="updateRoomId" style="padding:10px"/>
-              <button id="join-room" v-on:click="joinRoom" style="margin:10px">Join game</button>
-            </div>
-          </form>
-        </span>
-        
-        
-        
-        <span v-if="goto_waiting_room">
-          <h2>{{title}}</h2>
-
-          <div style="padding:10px">
-            <div style="border:solid">
-              <p>Hello {{username}}({{userid}}), you are in the room {{roomid}} !</p>
-            </div>
-          </div>
-
-          <div style="padding:10px">
-            <div style="border:solid">
-              <button id="leave-room" v-on:click="leaveRoom" style="margin:10px">Leave game</button>
-            </div>
-          </div>
-        </span>
-        <!---->
-        
-        
       </div>
-      <!-- TO DELETE
-      <div id="first-div">
-        <form>
-          <input name="username" type="text" maxlength="100" placeholder="username" aria-labelledby="submit-username">
-          <button type="submit" id="create-room">Start game</button>
-          <button type="submit" id="join-room">Join game</button>
-        </form>
-        
-      </div>
-      
-      <div id="second-div" hidden="true">
-        <form>
-          <input name="roomId" type="number" maxlength="100" placeholder="room Id" aria-labelledby="submit-id">
-          <button type="submit" id="continue">&#8594;</button>
-        </form>
-      </div>
-      <!---->
     </main>
 
     <!-- include the Glitch button to show what the webpage is about and

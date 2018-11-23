@@ -12,7 +12,7 @@
 
         <div style="padding:10px">
           <span v-for="choice in choices">
-            <input type="image" v-bind:id="choice.name" v-bind:alt="choice.name" v-bind:src="choice.url" v-on:click="chooseSign" style="height:100px; width:100px">
+            <input type="image" v-bind:id="choice.value" v-bind:alt="choice.name" v-bind:src="choice.url" v-on:click="chooseSign" style="height:100px; width:100px">
           </span>
         </div>
 

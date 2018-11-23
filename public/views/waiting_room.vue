@@ -6,14 +6,13 @@
         <div style="padding:10px">
           <div>
             <p>Hello {{username}} you are in room {{roomid}} !</p>
-            <p>Waiting for another player ...</p>
+            <p>{{waiting_msg}}</p>
           </div>
         </div>
 
         <div style="padding:10px">
           <div class="buttonspacing">
             <button id="leave-room" v-on:click="leaveRoom" class="button">Leave game</button>
-            <button id="play-game" v-on:click="playInRoom" class="button">Play game</button>
           </div>
         </div>
   </div>
