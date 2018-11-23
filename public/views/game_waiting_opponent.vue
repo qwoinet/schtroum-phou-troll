@@ -19,13 +19,30 @@
                 <img v-bind:src="userchoicepicture" class="" style="height:100px; width:100px">
               </div>
             </div>
+            
+            <div>
+              <p>
+                {{opponentname}} chose  
+              </p>
+              <div>
+                <img v-bind:src="opponentchoicepicture" class="" style="height:100px; width:100px"> 
+              </div>
+            </div>
+          
+            <div>
+              <p>
+                {{result}}  
+              </p>  
+            </div>
             <!--<input type="image" v-bind:id="choice.name" v-bind:alt="choice.name" v-bind:src="choice.url" v-on:click="chooseSign" style="height:100px; width:100px">-->
         </div>
 
         <div style="padding:10px">
           <div class="buttonspacing">
-            <!--<button id="leave-room" v-on:click="leaveRoom" class="button">Leave game</button>-->
-            <!--<button id="play-game" v-on:click="playInRoom" class="button">Play game</button>-->
+            <button id="leave-room" v-on:click="leaveRoom" class="button">Leave game</button>
+            <span v-if="resultgiven">
+              <button id="play-game" v-on:click="playAgain" class="button">Play again</button>
+            </span>
             <p class="saving"><span>.</span><span>.</span><span>.</span></p>
           </div>
         </div>

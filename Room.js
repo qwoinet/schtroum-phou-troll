@@ -17,6 +17,8 @@ class Room {
     //we add the newly created user to the list of users
     Room.rooms[roomId]= this;
     
+    this.choices = {};
+    
   }
   
   //method that adds a player to the room
@@ -34,6 +36,15 @@ class Room {
    }else{
     return false; 
    }
+  }
+  
+  choicesAreMade(){
+   for(var player of this.playersIds){
+    if (!(player in this.choices)){
+     return false; 
+    }
+   }
+    return true;
   }
 }
 
@@ -58,3 +69,9 @@ module.exports = Room;
 // console.log(new Room("kqsgfjsgdj", "5454"));
 
 // console.log(Room.rooms);
+//var room = new Room('skjdlkjs','ihkjhkj');
+//room.playersIds = ['Bob','Alice'];
+//room.choices = {'Bob': 1, 'Alice': 2}
+//console.log(room.choicesAreMade());
+//room.choices = {'Bob': 1}
+//console.log(room.choicesAreMade());

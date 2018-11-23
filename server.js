@@ -87,7 +87,7 @@ function createUser(username){
   //we generate a first id
   var userId = shortid.generate();
   
-  //we call the method that assigns it or generate anotger one
+  //we call the method that assigns it or generate another one
   function createWithId(username, userId){
     
     //we try to create the user with the generated id
@@ -157,6 +157,7 @@ function createRoomOnRequest(req,resp){
   var creatorId = req.body.userId;
   var roomId = createRoom(creatorId);
   let roomCreationDAO = new RoomCreationDAO(roomId, creatorId);
+  User.users[req.body.userId].roomId = roomId;
   resp.status(201).send(roomCreationDAO);
 }
 
@@ -168,7 +169,8 @@ function joinRoomOnRequest(req,resp){
       if(req.params.id in Room.rooms){
         try {
           Room.rooms[req.params.id].addPlayer(req.body.userId);
-          resp.status(200).send({userId: resp.locals.userId});
+          resp.status(200).send({userId: req.body.userId});
+          User.users[req.body.userId].roomId = req.params.id;
           if(Room.rooms[req.params.id].isFull()){
             broadcastToRoomFull(req.params.id);
           }
@@ -188,6 +190,14 @@ function joinRoomOnRequest(req,resp){
   }  
 }
 
+function leaveRoom(){
+  
+}
+
+function playInRoom(){
+  
+}
+
 
 //SOCKETS
 
@@ -200,19 +210,45 @@ io.on('connection', function (socket) {
   socket.emit('userId',userId);
   //console.log(userId);
   
+  socket.on('choice', function(choice){
+    var user = User.users[socket.id];
+    var room = Room.rooms[user.roomId];
+    room.choices[socket.id] = choice;
+    if(room.choicesAreMade()){
+      shareChoices(user.roomId);
+    }
+    
+  });
+  
+  socket.on('quit',function(){
+    var user = User.users[socket.id];
+    sendQuitRoom(socket.id, user.roomId);
+  });
+  
   
   socket.on('disconnect', function () {
     var userId = socket.id;
     var user = User.users[userId];
     var room = Room.rooms[user.roomId];
-    if(user.roomId != "" && room.playersIds.length==1){
-      delete Room.rooms[user.roomId];
+    if(user.roomId != "" ){
+      sendQuitRoom(socket.id, user.roomId);
     }
     delete User.users[userId];
-    //console.log("disconnection");
   });
+  
+  socket.on('again', function() {
+    var user = User.users[socket.id];
+    var room = Room.rooms[user.roomId];
+    playAgainNotification(socket.id, user.roomId);
+  });
+            
 });
 
+/*
+function called when both players have joined a room (the room is therefore full)
+takes the id of the room they are both in
+broadcasts a joined message to all the players in the room
+*/
 function broadcastToRoomFull(roomId){
   var room = Room.rooms[roomId];
   var usernames = [];
@@ -226,6 +262,55 @@ function broadcastToRoomFull(roomId){
     User.users[userId].socket.emit('joined',body); 
   }
 }
+
+/*
+Function called when both players of a room have made their choice
+roomId is the id of the room they are in
+it returns nothing 
+but send the choice of player 1 to player 2 and vice versa
+*/
+function shareChoices(roomId){
+  var room = Room.rooms[roomId];
+  for (var player1 in room.choices){
+    for (var player2 in room.choices){
+      if (player2 != player1){
+       User.users[player2].socket.emit('choice', room.choices[player1]);
+      }
+    }
+  }
+}
+
+/*
+Function called when one of the users diconnects or quits the room
+it sends a "quit" message to the other player so that he quits the room too
+the room is then deleted
+*/
+function sendQuitRoom(userId, roomId){
+  var room = Room.rooms[roomId];
+  for (var i = 0 ; i < room.playersIds.length ; i++){
+    if (room.playersIds[i] != userId){
+      var socket = User.users[room.playersIds[i]].socket;
+      socket.emit('quit');
+      User.users[room.playersIds[i]].roomId = "";
+    }
+  }
+  delete Room.rooms[roomId];
+}
+
+/*
+Function called when a user want to play again
+it send the play again message to the other player
+*/
+function playAgainNotification(senderId, roomId){
+  var room = Room.rooms[roomId];
+  for (var i = 0 ; i < room.playersIds.length ; i++){
+    if (room.playersIds[i] != senderId){
+      var socket = User.users[room.playersIds[i]].socket;
+        socket.emit('again');
+    }
+  }
+}
+
 
 // listen for requests :)
 // const listener = app.listen(port, function() {

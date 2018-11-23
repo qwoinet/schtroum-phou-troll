@@ -1,63 +1,5 @@
 
 
-/* TO DELETE
-
-// client-side js
-// run by the browser each time your view template is loaded
-
-// define variables that reference elements on our page
-const firstForm = document.forms[0];
-const firstDiv = document.getElementById("first-div");
-const secondDiv = document.getElementById("second-div");
-const usernameInput = firstForm.elements['username'];
-const createButton = firstForm.elements['create-room'];
-const joinButton = firstForm.elements['join-room'];
-
-createButton.onclick = function(event){
-
-  fetch('/create-room',{
-    method: 'POST',
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
-    },
-    body: 'username='+usernameInput.value
-  }).then(function(response){
-    //reponse à notre appel
-    if(response.ok){
-      response.json().then(function(object){
-        console.log(object.roomId);
-        console.log(object.userId1);
-        
-        alert("your room is number "+object.roomId + ", we are waiting for the other player");
-        alert("you can invite him using this link: https://schtroum-phou-troll.glitch.me/"+object.roomId);
-        });
-    } else {
-      alert("Error happened");
-      alert ("waiting for another player");
-    }
-  });
-  
-  // reset form 
-  usernameInput.value = '';
-}
-
-joinButton.onclick = function(event){
-  // reset form 
-  usernameInput.value = '';
-  firstDiv.setAttribute("hidden", "");
-  secondDiv.removeAttribute("hidden");
-  
-  
-}
-// listen for the form to be submitted and add a new dream when it is
-firstForm.onsubmit = function(event) {
-  // stop our form submission from refreshing the page
-  event.preventDefault();
-};
-*/
-
-/**/
-
 import Vue from 'vue'
 import Requests from './requetes.js'
 import ManageSockets from './manageSockets.js'
@@ -72,6 +14,86 @@ import vue_game_waiting_opponent from './views/game_waiting_opponent.vue'
 
 //
 //
+var currentVersion = 3;
+
+var ChoicesEnum = {
+  ROCK: 0,
+  PAPER: 1,
+  SICCORS: 2,
+  LIZARD: 3,
+  SPOCK: 4,
+};
+
+var ChoicesDesc = [
+  {
+    name: "rock", 
+    value: ChoicesEnum.ROCK,
+    url: 'https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Frock.png?1541956335451',
+    beats: function(against){ return against == ChoicesEnum.LIZARD || against == ChoicesEnum.SICCORS; },
+  },
+  {
+    name: "paper", 
+    value: ChoicesEnum.PAPER,
+    url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fpaper.png?1541956335380",
+    beats: function(against){ return against == ChoicesEnum.ROCK || against == ChoicesEnum.SPOCK; },
+  },
+  {
+    name: "scissors", 
+    value: ChoicesEnum.SICCORS,
+    url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fscissors.png?1541956335262",
+    beats: function(against){ return against == ChoicesEnum.PAPER || against == ChoicesEnum.LIZARD; },
+  },
+  {
+    name: "lizard", 
+    value: ChoicesEnum.LIZARD,
+    url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Flizard.png?1541956335285",
+    beats: function(against){ return against == ChoicesEnum.PAPER || against == ChoicesEnum.SPOCK; },
+  },
+  {
+    name: "spock", 
+    value: ChoicesEnum.SPOCK,
+    url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fspock.png?1541956335215",
+    beats: function(against){ return against == ChoicesEnum.ROCK || against == ChoicesEnum.SICCORS; },
+  },
+];
+//
+//
+
+/*
+//
+//Enum that describes the choices a player can make
+//To know if the client beat the other player just compare the other player's
+//choice with rules[<choice other player>].beats
+var ChoicesEnum = {
+  ROCK: 1,
+  PAPER: 2,
+  SCISSORS: 3,
+};
+//rules describing the game
+var rules =  {
+    1: {name: "rock", beats: ChoicesEnum.SCISSORS},
+    2: {name: "paper", beats: ChoicesEnum.ROCK},
+    3: {name: "scissors", beats: ChoicesEnum.PAPER}
+  };
+*/
+
+/*
+  function that returns wether or not the client is the winner
+  given his choice (myChoice) ant the other player's choice (otherPlayerChoice)
+*/
+
+function isWinner(otherPlayerChoice, myChoice){
+  if ( myChoice == otherPlayerChoice ){
+    //What happens ??? => draw : no points
+    return undefined;
+  } else {
+    return ChoicesDesc[myChoice].beats(otherPlayerChoice) ;
+  }
+}
+
+
+// First step : the user chooses its name
+//
 function goto_choose_name(){
   new Vue({
     el: '#application',
@@ -82,10 +104,12 @@ function goto_choose_name(){
     methods: {
       updateUsername: function(event){
         event.preventDefault();
+        // updates
         this.username = event.target.value;
       },
       validateUsername: function(event){
         event.preventDefault();
+        // tests the data
         if(this.username == ''){
           alert("The following information is missing : username");
           return;
@@ -96,7 +120,7 @@ function goto_choose_name(){
   });
 }
 
-//
+// Second step : the user chooses its room
 //
 function goto_choose_room(username){
   new Vue({
@@ -109,10 +133,12 @@ function goto_choose_room(username){
     methods: {
       updateRoomId: function(event){
         event.preventDefault();
+        // updates
         this.roomid = event.target.value;
       },
       joinRoom: function(event){
         event.preventDefault();
+        // tests the data
         if(this.username == ''){
           alert("The following information is missing : username");
           goto_choose_name();
@@ -122,16 +148,14 @@ function goto_choose_room(username){
           alert("The following information is missing : room Id");
           return;
         }
-        //call a function with 2 arguments
-        // - username : this.username
-        // - roomid : this.roomid
-        //expect 1 object
-        // - {error: false, userid} or {error: true, error_msg}
-        // var res = {error: false, userid: 4};
+        // prepare socket listener
+        ManageSockets.wait_for_socket_joined();
+        // send join request
         var res_promice = Requests.sendJoinRequest(this.username, this.roomid);
         var myusername = this.username;
         var myroomid = this.roomid;
-        res_promice.then(function(res){
+        // get answer
+        res_promice.then(function(res){ // res = {error: false, userid} or {error: true, error_msg}
           if(res.error){
             alert(res.error_msg);
           }
@@ -142,18 +166,18 @@ function goto_choose_room(username){
       },
       createRoom: function(event){
         event.preventDefault();
+        // tests the data
         if(this.username == ''){
           alert("The following information is missing : username");
           return;
         }
-        //call a function with 1 argument
-        // - username : this.username
-        //expect 1 object
-        // - {error: false, userid, roomid} or {error: true, error_msg}
-        //var res = {error: false, userid: 4, roomid: 3};
+        // prepare socket listener
+        ManageSockets.wait_for_socket_joined();
+        // send creation request
         var res_promice = Requests.sendCreationRequest(this.username);
         var myusername = this.username;
-        res_promice.then(function(res){
+        // get answer
+        res_promice.then(function(res){ // res = {error: false, userid, roomid} or {error: true, error_msg}
           if(res.error){
             alert(res.error_msg);
           }
@@ -162,110 +186,16 @@ function goto_choose_room(username){
           }
         });
       },
+      
     }
   });
 }
 
 
-// Entrance page of the application
-// Define username and create/join a room
-/**
-function goto_connect(){
-  //var current_vue = new Vue(vue_connect);
-  //current_vue.setAttributes(goto_list);
-  //current_vue.$mount('#application');
-  
-  new Vue({
-    el: '#application',
-    template: vue_connect.template,
-    data: {
-      username: '',
-      title: 'Front unique',
-      roomid: '',
-      goto_connect: true,
-    },
-    methods: {
-      updateUsername: function(event){
-        event.preventDefault();
-        this.username = event.target.value;
-      },
-      createRoom: function(event){
-        event.preventDefault();
-        if(this.username == ''){
-          alert("The following information is missing : username");
-          return;
-        }
-        //call a function with 1 argument
-        // - username : this.username
-        //expect 1 object
-        // - {error: false, userid, roomid} or {error: true, error_msg}
-        var res = {error: false, userid: 4, roomid: 3};
-        //var res = Requests.sendCreationRequest(this.username);
-        if(res.error){
-          alert(res.error_msg);
-        }
-        else{
-          this.goto_connect = false;
-          goto_waiting_room(this.username, res.userid, res.roomid);
-        }
-      },
-      updateRoomId: function(event){
-        event.preventDefault();
-        this.roomid = event.target.value;
-      },
-      joinRoom: function(event){
-        event.preventDefault();
-        if(this.username == ''){
-          alert("The following information is missing : username");
-          return;
-        }
-        if(this.roomid == ''){
-          alert("The following information is missing : room Id");
-          return;
-        }
-        //call a function with 2 arguments
-        // - username : this.username
-        // - roomid : this.roomid
-        //expect 1 object
-        // - {error: false, userid} or {error: true, error_msg}
-        var res = {error: false, userid: 4};
-        if(res.error){
-          alert(res.error_msg);
-        }
-        else{
-          this.goto_connect = false;
-          goto_waiting_room(this.username, res.userid, this.roomid);
-        }
-      },
-    },
-  });
-  
-}
-/**/
 
 // Waiting room
 // Wait for other players to join
 function goto_waiting_room(username, userid, roomid){
-  //alert("goto_waiting_room");
-  /**/
-  //ManageSockets.socket.on('joined',function(data){
-  //  alert('got socket "joined" new');
-    //ManageSockets.bind_with_socket_joined(function(data){});
-    //var JSONdata = data.json();
-    //JSONdata.then(function(resdata){
-    //  alert(resdata);
-      // resdata.usernames => transformation !!!!
-      //goto_game_choose_sign(username, userid, roomid, resdata.usernames);
-    //});
-    
-  //});
-  /**/
-  
-  /**/
-  ManageSockets.bind_with_socket_joined(function(data){
-    alert('got socket "joined" new');
-  });
-  /**/
   new Vue({
     el: '#application',
     template: vue_waiting_room.template,
@@ -273,13 +203,14 @@ function goto_waiting_room(username, userid, roomid){
       username: username,
       userid: userid,
       roomid: roomid,
+      waiting_msg: 'Waiting for another player ...',
     },
     methods:{
       leaveRoom: function(event){
         event.preventDefault();
         goto_choose_room(this.username);
       },
-      /**/
+      /**
       playInRoom: function(event){
         event.preventDefault();
         goto_game_choose_sign(this.username, this.userid, this.roomid, 'your opponent');
@@ -287,6 +218,22 @@ function goto_waiting_room(username, userid, roomid){
       /**/
     },
   });
+  
+  function handler_socket_joined(data){
+    ManageSockets.reset_functionToCall_joined();
+    if(data.usernames[0] == username){
+      goto_game_choose_sign(username, userid, roomid, data.usernames[1]);
+    }
+    else{
+      goto_game_choose_sign(username, userid, roomid, data.usernames[0]);
+    }
+  }
+  if(ManageSockets.socket_joined.received){
+    handler_socket_joined(ManageSockets.socket_joined.data);
+  }
+  else{
+    ManageSockets.set_functionToCall_joined(handler_socket_joined);
+  }
 }
 
 // Playing room
@@ -296,13 +243,7 @@ function goto_game_choose_sign(username, userid, roomid, opponentname){
     el: '#application',
     template: vue_game_choose_sign.template,
     data:{
-      choices:[
-        {name: "rock", url: 'https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Frock.png?1541956335451'},
-        {name: "paper", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fpaper.png?1541956335380"},
-        {name: "scissors", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fscissors.png?1541956335262"},
-        //{name: "lizard", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Flizard.png?1541956335285"},
-        //{name: "spock", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fspock.png?1541956335215"},
-        ],
+      choices: ChoicesDesc.slice(0, currentVersion),
       title: "Game's on",
       username: username,
       userid: userid,
@@ -313,6 +254,12 @@ function goto_game_choose_sign(username, userid, roomid, opponentname){
       chooseSign: function(event){
         event.preventDefault();
         //alert(event.target.id);
+        // prepare socket listener
+        ManageSockets.wait_for_socket_choice();
+        ManageSockets.wait_for_socket_quit();
+        ManageSockets.wait_for_socket_again();
+        // send choice socket
+        ManageSockets.play(event.target.id);
         goto_game_waiting_opponent(this.username, this.userid, this.roomid, this.opponentname, event.target.id);
       },
     },
@@ -322,41 +269,133 @@ function goto_game_choose_sign(username, userid, roomid, opponentname){
 //
 //
 function goto_game_waiting_opponent(username, userid, roomid, opponentname, userchoice){
-  alert(userchoice);
+  //alert(userchoice);
   var currentvue = new Vue({
     el: '#application',
     template: vue_game_waiting_opponent.template,
     data: {
-      choices:[
-        {name: "rock", url: 'https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Frock.png?1541956335451'},
-        {name: "paper", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fpaper.png?1541956335380"},
-        {name: "scissors", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fscissors.png?1541956335262"},
-        {name: "lizard", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Flizard.png?1541956335285"},
-        {name: "spock", url: "https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fspock.png?1541956335215"},
-        ],
+      choices: ChoicesDesc,
       title: "Waiting",
       username: username,
       userid: userid,
       roomid: roomid,
       userchoice: userchoice,
-      userchoicepicture: 'https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Fspock.png?1541956335215', //this.getPictureFromSign(userchoice),
+      userchoicepicture: ChoicesDesc[userchoice].url,
       opponentname: opponentname,
       opponentchoice: '',
       opponentchoicepicture: '',
+      result: '',
+      resultgiven: false,
     },
     methods:{
-      getPictureFromSign: function(sign){
-        for(var choice in this.choices){
-          if(choice.name == sign){
-            return choice.url;
-          }
-          return '';
+      leaveRoom: function(event){
+        //alert("You quit");
+        event.preventDefault();
+        ManageSockets.reset_functionToCall_choice();
+        ManageSockets.reset_functionToCall_quit();
+        ManageSockets.quit_room();
+        goto_choose_room(this.username);
+      },
+      playAgain: function(event){
+        event.preventDefault();
+        ManageSockets.reset_functionToCall_choice();
+        ManageSockets.reset_functionToCall_quit();
+        ManageSockets.again();
+        goto_waiting_room_again(this.username, this.userid, this.roomid, this.opponentname);
+      },
+      handler_socket_choice: function(data){
+        ManageSockets.reset_functionToCall_choice();
+        this.opponentchoice = data;
+        this.opponentchoicepicture = ChoicesDesc[this.opponentchoice].url;
+        if(ChoicesDesc[this.userchoice].beats(this.opponentchoice)){
+          this.result = 'You won';
         }
+        else if(ChoicesDesc[this.opponentchoice].beats(this.userchoice)){
+          this.result = 'You lost';
+        }
+        else{
+          this.result = 'equality';
+        }
+        this.resultgiven = true;
+      },
+      handler_socket_quit: function(){
+        ManageSockets.reset_functionToCall_choice();
+        ManageSockets.reset_functionToCall_quit();
+        alert("Your opponent quitted");
+        goto_choose_room(this.username);
       },
     },
   });
   //currentvue.$userchoicepicture = currentvue.$getPictureFromSign(currentvue.$userchoice);
+  
+  if(ManageSockets.socket_choice.received){
+    currentvue.handler_socket_choice(ManageSockets.socket_choice.data);
+  }
+  else{
+    ManageSockets.set_functionToCall_choice(currentvue.handler_socket_choice);
+  }
+  
+  if(ManageSockets.socket_quit.received){
+    currentvue.handler_socket_quit();
+  }
+  else{
+    ManageSockets.set_functionToCall_quit(currentvue.handler_socket_quit);
+  }
+  
 }
+
+
+
+// Waiting room
+// Wait for other players to join
+function goto_waiting_room_again(username, userid, roomid, opponentname){
+  var currentvue = new Vue({
+    el: '#application',
+    template: vue_waiting_room.template,
+    data:{
+      username: username,
+      userid: userid,
+      roomid: roomid,
+      opponentname: opponentname,
+      waiting_msg: 'Waiting for ' + opponentname + '...',
+    },
+    methods:{
+      leaveRoom: function(event){
+        event.preventDefault();
+        ManageSockets.quit_room();
+        goto_choose_room(this.username);
+      },
+      
+      handler_socket_quit: function(){
+        ManageSockets.reset_functionToCall_quit();
+        ManageSockets.reset_functionToCall_again();
+        alert("Your opponent quitted");
+        goto_choose_room(this.username);
+      },
+      handler_socket_again: function(){
+        ManageSockets.reset_functionToCall_quit();
+        ManageSockets.reset_functionToCall_again();
+        goto_game_choose_sign(this.username, this.userid, this.roomid, this.opponentname);
+      },
+    },
+  });
+  
+  if(ManageSockets.socket_quit.received){
+    currentvue.handler_socket_quit();
+  }
+  else{
+    ManageSockets.set_functionToCall_quit(currentvue.handler_socket_quit);
+  }
+  
+  if(ManageSockets.socket_again.received){
+    currentvue.handler_socket_again();
+  }
+  else{
+    ManageSockets.set_functionToCall_again(currentvue.handler_socket_again);
+  }
+  
+}
+
 
 goto_choose_name();
 
