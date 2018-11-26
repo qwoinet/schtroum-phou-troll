@@ -53,16 +53,47 @@ header h1{
   padding: 6px 12px;
   font-size: 14px;
   line-height: 1.42857143;
+  max-width: 360px;
+}
+
+.lightborder{
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
   color: #555;
   background-color: #fff;
   background-image: none;
   border: 1px solid #ccc;
   border-radius: 4px;
-  max-width: 340px;
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
 }
 
-@media screen and (max-width: 970px){
+.roomid{
+  font-size: 20px;
+  color: var(--maincolor);
+}
+
+.inline{
+  display: inline;
+}
+
+.flexinline{
+  display: flex;
+  justify-content: space-around;
+}
+
+.choices {
+  padding: 15px;
+}
+
+.choicesimg{
+  height:100px;
+  width:100px;
+  padding: 15px;
+}
+
+.buttonspacing{
+  padding: 10px 10px 20px 10px;
+}
+
+@media screen and (max-width: 1030px){
   header h1{
     font-size: 25px;
     /*vertical-align: bottom;*/
@@ -73,15 +104,22 @@ header h1{
   .bigmargin{
     margin: 5em 
   }
+  .choices{
+    padding: 10px;
+  }
+  .choicesimg{
+    height:100px;
+    width:100px;
+    padding: 10px;
+  }
 }
 
-@media screen and (max-width: 680px){
+@media screen and (max-width: 770px){
   header h1{
     font-size: 15px;
   }
-  h2{
-    height: 100px;
-    vertical-align: text-bottom;
+  .title{
+    padding: 65px 0px 0px 0px;
   }
   .pict{
     height: 100px;
@@ -92,6 +130,14 @@ header h1{
   .bigmargin{
     margin: 1em 
   }
+  .choices{
+    padding: 10px;
+  }
+  .choicesimg{
+    height:70px;
+    width:70px;
+    padding: 10px;
+  }
 }
 
 main{
@@ -100,10 +146,6 @@ main{
 
 .vue{
   border-radius:20px;
-}
-
-.buttonspacing{
-  padding: 0px 10px 20px 10px;
 }
 
 h1 {
@@ -126,13 +168,9 @@ form {
 }
 
 input {
-  display: block;
-  margin-bottom: 10px;
-  padding: 5px;
+  display: inline;
+  margin-bottom: 0px;
   width: 100%;
-  border: 1px solid lightblue;
-  border-radius: 3px;
-  font-size: 16px;
 }
 
 .button {

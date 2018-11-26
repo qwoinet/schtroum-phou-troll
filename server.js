@@ -239,6 +239,7 @@ io.on('connection', function (socket) {
   socket.on('again', function() {
     var user = User.users[socket.id];
     var room = Room.rooms[user.roomId];
+    room.choices = {}
     playAgainNotification(socket.id, user.roomId);
   });
             

@@ -196,29 +196,42 @@ function goto_choose_room(username){
 // Waiting room
 // Wait for other players to join
 function goto_waiting_room(username, userid, roomid){
-  new Vue({
+  var currentvue = new Vue({
     el: '#application',
     template: vue_waiting_room.template,
     data:{
       username: username,
       userid: userid,
       roomid: roomid,
-      waiting_msg: 'Waiting for another player ...',
+      waiting_msg: 'Waiting for another player',
     },
     methods:{
       leaveRoom: function(event){
         event.preventDefault();
         goto_choose_room(this.username);
       },
-      /**
-      playInRoom: function(event){
-        event.preventDefault();
-        goto_game_choose_sign(this.username, this.userid, this.roomid, 'your opponent');
+      copy: function(){
+        /*var copyText = roomid;
+        copyText.select();*/
+        var textArea = document.createElement("textArea");
+        textArea.value = roomid
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
       },
-      /**/
+      handler_socket_joined(data){
+        ManageSockets.reset_functionToCall_joined();
+        if(data.usernames[0] == this.username){
+          goto_game_choose_sign(this.username, this.userid, this.roomid, data.usernames[1]);
+        }
+        else{
+          goto_game_choose_sign(this.username, this.userid, this.roomid, data.usernames[0]);
+        }
+      },
     },
   });
-  
+  /*
   function handler_socket_joined(data){
     ManageSockets.reset_functionToCall_joined();
     if(data.usernames[0] == username){
@@ -228,11 +241,12 @@ function goto_waiting_room(username, userid, roomid){
       goto_game_choose_sign(username, userid, roomid, data.usernames[0]);
     }
   }
+  /**/
   if(ManageSockets.socket_joined.received){
-    handler_socket_joined(ManageSockets.socket_joined.data);
+    currentvue.handler_socket_joined(ManageSockets.socket_joined.data);
   }
   else{
-    ManageSockets.set_functionToCall_joined(handler_socket_joined);
+    ManageSockets.set_functionToCall_joined(currentvue.handler_socket_joined);
   }
 }
 
@@ -372,10 +386,22 @@ function goto_waiting_room_again(username, userid, roomid, opponentname){
         alert("Your opponent quitted");
         goto_choose_room(this.username);
       },
+      
       handler_socket_again: function(){
         ManageSockets.reset_functionToCall_quit();
         ManageSockets.reset_functionToCall_again();
         goto_game_choose_sign(this.username, this.userid, this.roomid, this.opponentname);
+      },
+      
+      copy: function(){
+        /*var copyText = roomid;
+        copyText.select();*/
+        var textArea = document.createElement("textArea");
+        textArea.value = roomid
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
       },
     },
   });
