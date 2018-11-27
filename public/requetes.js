@@ -1,6 +1,6 @@
 //call a function with 1 argument
         // - username : this.username
-        //expect 1 value
+        //expect 1 value (as a promise)
         // - {error: false, userid, roomid} or {error: true, error_msg}
 
 async function sendCreationRequest(username){
@@ -31,7 +31,7 @@ async function sendCreationRequest(username){
         // - username : this.username
         // - roomid : this.roomid
         //expect 1 value
-        // - {error: false, userid} or {error: true, error_msg}
+        // - {error: false, userid} or {error: true, error_msg}(as a promise)
 
 async function sendJoinRequest(username, roomId){
   let returnValue = {};
