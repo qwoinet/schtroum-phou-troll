@@ -61,6 +61,7 @@ function wait_for_socket_choice(){
   reset_functionToCall_choice();
 }
 socket.on('choice',function(data){
+  console.log("choice received");
   socket_choice.received = true;
   socket_choice.data = data;
   functionToCall_choice(data);

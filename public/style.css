@@ -23,13 +23,17 @@ header{
     background-color: var(--buttoncolor);
 }
 header h1{
-    font-size: 42px;
+    font-size: 80px;
     text-align: center;
-    line-height: 100px;
+    line-height: 150px;
+}
+
+.center{
+  text-align: center;
 }
 
 .bigmargin{
- margin: 10em 
+ margin: 2em 12em 10em 12em;
 }
 
 .simplepadding{
@@ -89,13 +93,45 @@ header h1{
   padding: 15px;
 }
 
-.buttonspacing{
-  padding: 10px 10px 20px 10px;
+.buttonspacing {
+  padding: 10px 10px 20px 25px; 
 }
 
-@media screen and (max-width: 1030px){
+.buttonline{
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+}
+
+.buttonline > * {
+  margin: 20px;
+}
+
+.topmargin{
+  margin-top: 50px;
+}
+
+.halfscreenPC{
+  width: 50%;
+}
+
+.result{
+  text-align: center;
+  font-size: 42px;
+}
+
+.names{
+  text-align: center;
+  font-size: 20px;
+}
+
+.title{
+  font-size: 30px;
+}
+
+@media screen and (max-width: 1050px){
   header h1{
-    font-size: 25px;
+    font-size: 42px;
     /*vertical-align: bottom;*/
   }
   .pict{
@@ -114,9 +150,9 @@ header h1{
   }
 }
 
-@media screen and (max-width: 770px){
+@media screen and (max-width: 790px){
   header h1{
-    font-size: 15px;
+    font-size: 40px;
   }
   .title{
     padding: 65px 0px 0px 0px;
@@ -138,6 +174,16 @@ header h1{
     width:70px;
     padding: 10px;
   }
+  
+  .halfscreenPC{
+    width: 100%;
+  }
+  .smallremove{
+    display: none;
+  }
+  .result{
+    font-size: 20px
+  }
 }
 
 main{
@@ -157,7 +203,7 @@ h1 {
   font-weight: bold;
 }
 
-p {
+.thirds {
   max-width: 600px;
 }
 

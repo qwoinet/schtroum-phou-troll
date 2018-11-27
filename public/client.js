@@ -6,7 +6,7 @@ import ManageSockets from './manageSockets.js'
 
 import vue_choose_name from './views/choose_name.vue'
 import vue_choose_room from './views/choose_room.vue'
-import vue_connect from './views/connect.vue'
+//import vue_connect from './views/connect.vue'
 import vue_waiting_room from './views/waiting_room.vue'
 import vue_game_choose_sign from './views/game_choose_sign.vue'
 import vue_game_waiting_opponent from './views/game_waiting_opponent.vue'
@@ -81,7 +81,7 @@ var rules =  {
   function that returns wether or not the client is the winner
   given his choice (myChoice) ant the other player's choice (otherPlayerChoice)
 */
-
+/*
 function isWinner(otherPlayerChoice, myChoice){
   if ( myChoice == otherPlayerChoice ){
     //What happens ??? => draw : no points
@@ -90,7 +90,7 @@ function isWinner(otherPlayerChoice, myChoice){
     return ChoicesDesc[myChoice].beats(otherPlayerChoice) ;
   }
 }
-
+*/
 
 // First step : the user chooses its name
 //
@@ -157,7 +157,7 @@ function goto_choose_room(username){
         // get answer
         res_promice.then(function(res){ // res = {error: false, userid} or {error: true, error_msg}
           if(res.error){
-            alert(res.error_msg);
+            alert(res.message);
           }
           else{
             goto_waiting_room(myusername, res.userid, myroomid);
@@ -222,11 +222,14 @@ function goto_waiting_room(username, userid, roomid){
       },
       handler_socket_joined(data){
         ManageSockets.reset_functionToCall_joined();
+        // prepare socket listener
+        ManageSockets.wait_for_socket_quit();
+        ManageSockets.wait_for_socket_again();
         if(data.usernames[0] == this.username){
-          goto_game_choose_sign(this.username, this.userid, this.roomid, data.usernames[1]);
+          goto_game_choose_sign(this.username, this.userid, 0, this.roomid, data.usernames[1], 0);
         }
         else{
-          goto_game_choose_sign(this.username, this.userid, this.roomid, data.usernames[0]);
+          goto_game_choose_sign(this.username, this.userid, 0, this.roomid, data.usernames[0], 0);
         }
       },
     },
@@ -252,8 +255,8 @@ function goto_waiting_room(username, userid, roomid){
 
 // Playing room
 // Choose the sign to use
-function goto_game_choose_sign(username, userid, roomid, opponentname){
-  new Vue({
+function goto_game_choose_sign(username, userid, userscore, roomid, opponentname, opponentscore){
+  var currentvue = new Vue({
     el: '#application',
     template: vue_game_choose_sign.template,
     data:{
@@ -261,28 +264,42 @@ function goto_game_choose_sign(username, userid, roomid, opponentname){
       title: "Game's on",
       username: username,
       userid: userid,
+      userscore: userscore,
       roomid: roomid,
       opponentname: opponentname,
+      opponentscore: opponentscore,
     },
     methods:{
       chooseSign: function(event){
         event.preventDefault();
-        //alert(event.target.id);
         // prepare socket listener
         ManageSockets.wait_for_socket_choice();
-        ManageSockets.wait_for_socket_quit();
         ManageSockets.wait_for_socket_again();
         // send choice socket
         ManageSockets.play(event.target.id);
-        goto_game_waiting_opponent(this.username, this.userid, this.roomid, this.opponentname, event.target.id);
+        goto_game_waiting_opponent(this.username, this.userid, this.userscore, this.roomid, this.opponentname, this.opponentscore, event.target.id);
+      },
+      handler_socket_quit: function(){
+        ManageSockets.reset_functionToCall_choice();
+        ManageSockets.reset_functionToCall_quit();
+        alert("Your opponent quitted");
+        goto_choose_room(this.username);
       },
     },
   });
+  
+  
+  if(ManageSockets.socket_quit.received){
+    currentvue.handler_socket_quit();
+  }
+  else{
+    ManageSockets.set_functionToCall_quit(currentvue.handler_socket_quit);
+  }
 }
 
 //
 //
-function goto_game_waiting_opponent(username, userid, roomid, opponentname, userchoice){
+function goto_game_waiting_opponent(username, userid, userscore, roomid, opponentname, opponentscore, userchoice){
   //alert(userchoice);
   var currentvue = new Vue({
     el: '#application',
@@ -295,9 +312,11 @@ function goto_game_waiting_opponent(username, userid, roomid, opponentname, user
       roomid: roomid,
       userchoice: userchoice,
       userchoicepicture: ChoicesDesc[userchoice].url,
+      userscore: userscore,
       opponentname: opponentname,
       opponentchoice: '',
       opponentchoicepicture: '',
+      opponentscore: opponentscore,
       result: '',
       resultgiven: false,
     },
@@ -315,7 +334,7 @@ function goto_game_waiting_opponent(username, userid, roomid, opponentname, user
         ManageSockets.reset_functionToCall_choice();
         ManageSockets.reset_functionToCall_quit();
         ManageSockets.again();
-        goto_waiting_room_again(this.username, this.userid, this.roomid, this.opponentname);
+        goto_waiting_room_again(this.username, this.userid, this.userscore, this.roomid, this.opponentname, this.opponentscore);
       },
       handler_socket_choice: function(data){
         ManageSockets.reset_functionToCall_choice();
@@ -323,9 +342,11 @@ function goto_game_waiting_opponent(username, userid, roomid, opponentname, user
         this.opponentchoicepicture = ChoicesDesc[this.opponentchoice].url;
         if(ChoicesDesc[this.userchoice].beats(this.opponentchoice)){
           this.result = 'You won';
+          this.userscore += 1;
         }
         else if(ChoicesDesc[this.opponentchoice].beats(this.userchoice)){
           this.result = 'You lost';
+          this.opponentscore += 1;
         }
         else{
           this.result = 'equality';
@@ -362,15 +383,17 @@ function goto_game_waiting_opponent(username, userid, roomid, opponentname, user
 
 // Waiting room
 // Wait for other players to join
-function goto_waiting_room_again(username, userid, roomid, opponentname){
+function goto_waiting_room_again(username, userid, userscore, roomid, opponentname, opponentscore){
   var currentvue = new Vue({
     el: '#application',
     template: vue_waiting_room.template,
     data:{
       username: username,
       userid: userid,
+      userscore: userscore,
       roomid: roomid,
       opponentname: opponentname,
+      opponentscore: opponentscore,
       waiting_msg: 'Waiting for ' + opponentname + '...',
     },
     methods:{
@@ -390,7 +413,7 @@ function goto_waiting_room_again(username, userid, roomid, opponentname){
       handler_socket_again: function(){
         ManageSockets.reset_functionToCall_quit();
         ManageSockets.reset_functionToCall_again();
-        goto_game_choose_sign(this.username, this.userid, this.roomid, this.opponentname);
+        goto_game_choose_sign(this.username, this.userid, this.userscore, this.roomid, this.opponentname, this.opponentscore);
       },
       
       copy: function(){

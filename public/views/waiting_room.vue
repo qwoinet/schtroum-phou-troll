@@ -1,7 +1,7 @@
 <template>
   <div id="application" class="vue">
-    <img src="https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Frules.png?1541983837413" class="right pict">
-      <div class="bigmargin">
+    <img src="https://cdn.glitch.com/b645b0f9-bdf9-4200-ae1c-de7e30968619%2Frules.png?1541983837413" class="right pict smallremove">
+      <div>
         <h2>Waiting room</h2>
 
         <div class="simplepadding">

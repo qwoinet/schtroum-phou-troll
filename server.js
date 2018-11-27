@@ -8,6 +8,7 @@ var app = express()
   , server = http.createServer(app)
   , io = require('socket.io').listen(server);
 
+//if the port is defined in the env file then its value is used otherwise, port = 3000
 var port = process.env.PORT || 3000;
 
 
@@ -30,7 +31,7 @@ var shortid = require('shortid');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended:false}));
 
-// http://expressjs.com/en/starter/basic-routing.html
+//We send the index file when the user arrives 
 app.get('/', function(request, response) {
   response.sendFile(__dirname + '/views/index.html');
 });
@@ -126,11 +127,18 @@ function updateUsernameOnRequest(req, resp, next){
 
 //ROOM CREATION
 
+function generateRandomRoomNumber(){
+  var i = Math.floor(Math.random() * 10000);
+  return i;
+}
+                     
+
 //function called to create a room
 function createRoom(creatorId){
   
   //we generate a random id for the room
-  var roomId = shortid.generate();
+  //var roomId = shortid.generate();
+  var roomId = generateRandomRoomNumber();
   
   //intern recursive function called to create a room and verify that the id is not taken
   function createWithId(creatorId, roomId){
@@ -142,7 +150,7 @@ function createRoom(creatorId){
        
        //if it doesn't work it means that the id is taken so we generate a new one and call the function again
      } catch(e){
-       roomId = shortid.generate();
+       roomId = generateRandomRoomNumber();
        createWithId(creatorId, roomId);
      }
   }
@@ -211,10 +219,13 @@ io.on('connection', function (socket) {
   //console.log(userId);
   
   socket.on('choice', function(choice){
+    console.log("choice received from "+ User.users[socket.id].username);
     var user = User.users[socket.id];
     var room = Room.rooms[user.roomId];
     room.choices[socket.id] = choice;
+    console.log(room.choices);
     if(room.choicesAreMade()){
+      console.log("sharing choices with both players");
       shareChoices(user.roomId);
     }
     
@@ -239,6 +250,7 @@ io.on('connection', function (socket) {
   socket.on('again', function() {
     var user = User.users[socket.id];
     var room = Room.rooms[user.roomId];
+    console.log("je réinitialise à cause de "+user.username);
     room.choices = {}
     playAgainNotification(socket.id, user.roomId);
   });
@@ -253,11 +265,13 @@ broadcasts a joined message to all the players in the room
 function broadcastToRoomFull(roomId){
   var room = Room.rooms[roomId];
   var usernames = [];
+  //We construc a list of the usernames of the players in the room
   for(var i = 0;i< room.playersIds.length; i++){
     var userId = room.playersIds[i];
     usernames.push(User.users[userId].username); 
   }
   var body = {usernames : usernames};
+  //We send the "join" message to all the other players in the room
   for(var i = 0; i < room.playersIds.length; i++){
     userId = room.playersIds[i];
     User.users[userId].socket.emit('joined',body); 
@@ -272,6 +286,7 @@ but send the choice of player 1 to player 2 and vice versa
 */
 function shareChoices(roomId){
   var room = Room.rooms[roomId];
+  //We share the choices of each player in the room to all the other players
   for (var player1 in room.choices){
     for (var player2 in room.choices){
       if (player2 != player1){
@@ -288,13 +303,16 @@ the room is then deleted
 */
 function sendQuitRoom(userId, roomId){
   var room = Room.rooms[roomId];
+  //We send "quit" to all the other players in the room
   for (var i = 0 ; i < room.playersIds.length ; i++){
     if (room.playersIds[i] != userId){
       var socket = User.users[room.playersIds[i]].socket;
-      socket.emit('quit');
-      User.users[room.playersIds[i]].roomId = "";
+      socket.emit('quit');      
     }
+    //We trinitialise the roomId parameter of all the other users in the room
+    User.users[room.playersIds[i]].roomId = "";
   }
+  //Then we delete the room
   delete Room.rooms[roomId];
 }
 
@@ -304,6 +322,7 @@ it send the play again message to the other player
 */
 function playAgainNotification(senderId, roomId){
   var room = Room.rooms[roomId];
+  //we send the message "again" to all the other players in the room
   for (var i = 0 ; i < room.playersIds.length ; i++){
     if (room.playersIds[i] != senderId){
       var socket = User.users[room.playersIds[i]].socket;
@@ -314,7 +333,9 @@ function playAgainNotification(senderId, roomId){
 
 
 // listen for requests :)
-// const listener = app.listen(port, function() {
+
+//Try this to see the port when the server starts listening
+// const listener = server.listen(port, function() {
 //   console.log('Your app is listening on port ' + listener.address().port);
 // });
 

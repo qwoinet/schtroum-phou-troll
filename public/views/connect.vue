@@ -1,6 +1,6 @@
 <template>
   <div id="application" class="vue">
-    <div class="simplepadding">
+    <div>
       <form v-on:submit="createRoom">
         <div>
         <!-- rules image -->
