@@ -59,38 +59,6 @@ var ChoicesDesc = [
 //
 //
 
-/*
-//
-//Enum that describes the choices a player can make
-//To know if the client beat the other player just compare the other player's
-//choice with rules[<choice other player>].beats
-var ChoicesEnum = {
-  ROCK: 1,
-  PAPER: 2,
-  SCISSORS: 3,
-};
-//rules describing the game
-var rules =  {
-    1: {name: "rock", beats: ChoicesEnum.SCISSORS},
-    2: {name: "paper", beats: ChoicesEnum.ROCK},
-    3: {name: "scissors", beats: ChoicesEnum.PAPER}
-  };
-*/
-
-/*
-  function that returns wether or not the client is the winner
-  given his choice (myChoice) ant the other player's choice (otherPlayerChoice)
-*/
-/*
-function isWinner(otherPlayerChoice, myChoice){
-  if ( myChoice == otherPlayerChoice ){
-    //What happens ??? => draw : no points
-    return undefined;
-  } else {
-    return ChoicesDesc[myChoice].beats(otherPlayerChoice) ;
-  }
-}
-*/
 
 // First step : the user chooses its name
 //
@@ -102,11 +70,14 @@ function goto_choose_name(){
       username: '', 
     },
     methods: {
+      // Reacts to the modification of the username in the form
       updateUsername: function(event){
         event.preventDefault();
         // updates
         this.username = event.target.value;
       },
+      // Reacts to the validation of the form
+      // If everything is right we go to choose_room
       validateUsername: function(event){
         event.preventDefault();
         // tests the data
